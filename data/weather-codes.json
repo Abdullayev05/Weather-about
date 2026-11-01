@@ -1,0 +1,12 @@
+{
+  "0": { "text": "Açıq, Günəşli", "icon": "fa-solid fa-sun" },
+  "1": { "text": "Əsasən Açıq", "icon": "fa-solid fa-cloud-sun" },
+  "2": { "text": "Az Buludlu", "icon": "fa-solid fa-cloud-sun" },
+  "3": { "text": "Buludlu", "icon": "fa-solid fa-cloud" },
+  "45": { "text": "Dumanlı", "icon": "fa-solid fa-smog" },
+  "48": { "text": "Qatı Duman", "icon": "fa-solid fa-smog" },
+  "51": { "text": "Yüngül Çiskin", "icon": "fa-solid fa-cloud-rain" },
+  "61": { "text": "Yağışlı", "icon": "fa-solid fa-cloud-rain" },
+  "71": { "text": "Qarlı", "icon": "fa-solid fa-snowflake" },
+  "95": { "text": "Fırtınalı və İldırımlı", "icon": "fa-solid fa-cloud-bolt" }
+}

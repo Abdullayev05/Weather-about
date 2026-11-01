@@ -12,9 +12,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- JSON Faylını əvvəlcədən yükləmək üçün -->
+    <link rel="preload" href="./data/weather-codes.json" as="fetch" type="application/json" crossorigin>
+    
     <!-- CSS Faylımız -->
     <link rel="stylesheet" href="./assets/css/style.css">
-    <script defer src="./assets/js/app.js"></script>
+    <script type="module" src="./assets/js/app.js"></script>
+    <!-- <script type="module" src="./assets/js/api.js"></script> -->
+    <script type="module" src="./assets/js/ui.js"></script>
 
 </head>
 <body>
@@ -23,7 +28,6 @@
         
         <!-- SOL TƏRƏF: XƏRİTƏ VƏ AXTARIŞ PANELİ -->
         <div class="map-section">
-            <!-- Axtarış Qutusu (Input) -->
             <div class="search-box-container">
                 <input type="text" id="city-input" placeholder="Şəhər və ya rayon adı yazın (məs: Bakı)...">
                 <button id="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
@@ -80,6 +84,7 @@
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- JS Faylımız -->
+    
+    <!-- Əsas Modul JS Faylımız (Bütün digər js fayllarını özü idarə edəcək) -->
 </body>
 </html>
