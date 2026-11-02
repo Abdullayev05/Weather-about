@@ -185,7 +185,11 @@ body {
 .detail-item strong {
     font-size: 15px;
 }
-
+.location-header { /* Və ya səndə bu hissə necə adlanırsa */
+    display: flex;
+    align-items: center;
+    gap: 12px; /* İkon ilə yazı arasındakı məsafə */
+}
 .weather-section h3 {
     font-size: 17px;
     font-weight: 500;
@@ -282,6 +286,17 @@ body {
 .leaflet-top.leaflet-left {
     top: 60px !important; /* İstədiyin qədər artırıb azalda bilərsən */
 }
+
+#weather-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none; /* Kliklərin keçməsinə icazə verir */
+    z-index: 999; /* Digər elementlərin üzərində və ya arxasında olması üçün tənzimləyə bilərsən */
+}
+
 /* MOBİL UYĞUNLUQ (RESPONSIVE) */
 @media screen and (max-width: 1024px) {
     body {

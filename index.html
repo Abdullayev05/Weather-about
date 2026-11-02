@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 <html lang="az">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Professional İnteraktiv Hava Proqnozu</title>
-    
+
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
+
     <!-- Google Fonts & FontAwesome -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- JSON Faylını əvvəlcədən yükləmək üçün -->
     <link rel="preload" href="./data/weather-codes.json" as="fetch" type="application/json" crossorigin>
-    
+
     <!-- CSS Faylımız -->
     <link rel="stylesheet" href="./assets/css/style.css">
     <script type="module" src="./assets/js/app.js"></script>
@@ -22,10 +24,11 @@
     <script type="module" src="./assets/js/ui.js"></script>
 
 </head>
-<body>
 
+<body>
+    <canvas id="weather-canvas"></canvas>
     <div class="app-container">
-        
+
         <!-- SOL TƏRƏF: XƏRİTƏ VƏ AXTARIŞ PANELİ -->
         <div class="map-section">
             <div class="search-box-container">
@@ -34,7 +37,7 @@
             </div>
 
             <div id="map"></div>
-            
+
             <!-- <div class="map-instruction">
                 <i class="fa-solid fa-hand-pointer"></i> Xəritəyə klikləyin və ya yuxarıdan axtarış edin
             </div> -->
@@ -43,38 +46,39 @@
         <!-- SAĞ TƏRƏF: HAVA MƏLUMATLARI -->
         <div class="weather-section">
             <div class="header">
-                <h2 id="location-name"><i class="fa-solid fa-location-dot"></i> Yer seçin</h2>
+                <h2 id="location-name"><i class="fa-solid fa-location-dot"></i>Yer seçin</h2>
                 <p id="current-date">--</p>
             </div>
 
             <!-- Cari Hava Kartı -->
             <div class="current-weather">
-                <div class="temp-box">
-                    <h1 id="current-temp">--°C</h1>
-                    <p id="weather-desc">Hava məlumatı gözlənilir...</p>
-                </div>
-                <div class="weather-icon">
-                    <i id="main-icon" class="fa-solid fa-cloud-sun"></i>
-                </div>
-            </div>
+    <div class="temp-box">
+        <h1 id="current-temp">11°C</h1>
+        <p id="weather-desc">Buludlu</p>
+    </div>
+    <div class="weather-icon">
+        <!-- İşarələdiyin yerə düşəcək hərəkətli ikon teqi -->
+        <object id="main-icon" data="" type="image/svg+xml" style="width: 85px; height: 85px;"></object>
+    </div>
+</div>
 
             <!-- Əlavə Detallar (Külək, Rütubət) -->
             <div class="weather-details">
                 <div class="detail-item">
-                    <i class="fa-solid fa-wind"></i>
-                    <span>Külək</span>
+                    <object id="wind-icon" data="https://cdn.meteocons.com/3.0.0-next.10/svg/fill/wind.svg"
+                        type="image/svg+xml" style="width: 35px; height: 35px;"></object> <span>Külək</span>
                     <strong id="wind-speed">-- km/s</strong>
                 </div>
                 <div class="detail-item">
-                    <i class="fa-solid fa-droplet"></i>
-                    <span>Rütubət</span>
+                    <object id="humidity-icon" data="https://cdn.meteocons.com/3.0.0-next.10/svg/fill/raindrop.svg"
+                        type="image/svg+xml" style="width: 35px; height: 35px;"></object> <span>Rütubət</span>
                     <strong id="humidity">--%</strong>
                 </div>
             </div>
 
             <!-- 7 Günlük Proqnoz Başlığı -->
             <h3><i class="fa-solid fa-calendar-days"></i> 7 Günlük Proqnoz</h3>
-            
+
             <!-- 7 Günlük Kartların Konteyneri -->
             <div class="weekly-forecast" id="weekly-container">
                 <p class="placeholder-text">Zəhmət olmasa xəritədən nöqtə seçin və ya axtarış edin.</p>
@@ -84,7 +88,8 @@
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
+
     <!-- Əsas Modul JS Faylımız (Bütün digər js fayllarını özü idarə edəcək) -->
 </body>
+
 </html>

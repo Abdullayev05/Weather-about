@@ -24,10 +24,27 @@ async function loadCodes() {
 loadCodes();
 
 // Xəritəyə kliklədikdə
-map.on('click', async function (e) {
+map.on('click', async function(e) {
     const lat = e.latlng.lat;
     const lon = e.latlng.lng;
-    await executeWeatherDataAndLocation(lat, lon);
+
+    try {
+        // 1. Koordinatın adını (Reverse Geocoding vasitəsilə) əldə edirik
+        const geoResponse = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=az`);
+        const geoData = await geoResponse.json();
+        
+        // Rayon, şəhər və ya kənd adını tapırıq (tapılmasa koordinat yazılır)
+        const address = geoData.address;
+        const cityName = address.city || address.town || address.village || address.county || address.state || `Koordinat: ${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+
+        // 2. Həmin koordinatların hava məlumatını çəkirik
+        await executeWeatherDataAndLocation(lat, lon, cityName);
+
+    } catch (error) {
+        console.error("Yer adını tapmaq mümkün olmadı:", error);
+        // Xəta olarsa sadəcə koordinat ötürürük
+        await executeWeatherDataAndLocation(lat, lon, `Koordinat: ${lat.toFixed(2)}, ${lon.toFixed(2)}`);
+    }
 });
 
 // Axtarış düyməsi və input
@@ -96,15 +113,22 @@ async function executeWeatherDataAndLocation(lat, lon, customName = null) {
 
     // 1. Hava məlumatlarını çək
     try {
-        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`;
+        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`;
 
         const res = await fetch(weatherUrl);
         if (!res.ok) throw new Error("API xətası");
 
         const weatherData = await res.json();
 
+        // Yer adını təyin etmək üçün qabaqcadan adı tapaq ki, updateUI-ə ötürək
+        let placeName = customName;
+        if (!placeName) {
+            placeName = await getPlaceName(lat, lon);
+        }
+
         if (weatherData && weatherData.current) {
             updateCurrentWeather(weatherData.current);
+            updateUI(weatherData, placeName);
         }
         if (weatherData && weatherData.daily) {
             updateWeeklyForecast(weatherData.daily);
@@ -144,6 +168,29 @@ async function executeWeatherDataAndLocation(lat, lon, customName = null) {
     }
 }
 
+// Köməkçi yer adı tapma funksiyası
+async function getPlaceName(lat, lon) {
+    try {
+        const reverseUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=az`;
+        const res = await fetch(reverseUrl);
+        const locData = await res.json();
+
+        if (locData && locData.address) {
+            return locData.address.city ||
+                locData.address.town ||
+                locData.address.village ||
+                locData.address.state ||
+                locData.address.county ||
+                locData.display_name.split(',')[0];
+        } else if (locData && locData.display_name) {
+            return locData.display_name.split(',')[0];
+        }
+    } catch (e) {
+        return `Koordinat: ${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+    }
+    return "Seçilmiş nöqtə";
+}
+
 function setLocationHeader(name) {
     const cleanName = name.includes(',') ? name.split(',')[0] : name;
     safeSetHTML('location-name', `<i class="fa-solid fa-location-dot"></i> ${cleanName}`);
@@ -156,17 +203,45 @@ function updateCurrentWeather(current) {
     const temp = current.temperature_2m !== undefined ? Math.round(current.temperature_2m) : "--";
     const humidity = current.relative_humidity_2m !== undefined ? current.relative_humidity_2m : "--";
     const wind = current.wind_speed_10m !== undefined ? current.wind_speed_10m : "--";
-    const code = current.weather_code !== undefined ? current.weather_code : 0;
+
+    const currentWeatherCode = current.weather_code !== undefined ? current.weather_code : 0;
+    const isDay = current.is_day !== undefined ? current.is_day : 1;
 
     safeSetText('current-temp', `${temp}°C`);
     safeSetText('humidity', `${humidity}%`);
     safeSetText('wind-speed', `${wind} km/s`);
 
-    const weatherInfo = getWeatherDescription(code);
+    const weatherInfo = getWeatherDescription(currentWeatherCode);
     safeSetText('weather-desc', weatherInfo.text);
 
-    const iconEl = document.getElementById('main-icon');
-    if (iconEl) iconEl.className = weatherInfo.icon;
+    // İkonun yenilənməsi
+    const iconElement = document.getElementById('weather-icon');
+    if (iconElement) {
+        iconElement.src = getWeatherIconUrl(currentWeatherCode, isDay);
+    }
+}
+
+// updateUI funksiyası
+function updateUI(data, cityName) {
+    const titleEl = document.getElementById('location-title');
+    if (titleEl) titleEl.innerText = cityName;
+
+    const tempEl = document.getElementById('current-temp');
+    if (tempEl) tempEl.innerText = `${Math.round(data.current.temperature_2m)}°C`;
+    
+    const currentWeatherCode = data.current.weather_code;
+    const isDay = data.current.is_day;
+    
+    const mainIconObj = document.getElementById('main-icon');
+    if (mainIconObj) {
+        mainIconObj.data = getWeatherIconUrl(currentWeatherCode, isDay);
+    }
+
+    const windEl = document.querySelector('.wind-value');
+    if (windEl) windEl.innerText = `${data.current.wind_speed_10m} km/s`;
+
+    const humidityEl = document.querySelector('.humidity-value');
+    if (humidityEl) humidityEl.innerText = `${data.current.relative_humidity_2m}%`;
 }
 
 function updateWeeklyForecast(daily) {
@@ -174,33 +249,34 @@ function updateWeeklyForecast(daily) {
     if (!container) return;
     container.innerHTML = '';
 
-    for (let i = 0; i < daily.time.length; i++) {
-        const dateObj = new Date(daily.time[i]);
-        const dayIndex = dateObj.getDay(); 
-        
-        let dayName = (i === 0) ? "Bugün" : azDays[dayIndex];
+    daily.time.forEach((time, index) => {
+        const weatherCode = daily.weather_code[index];
+        const maxTemp = Math.round(daily.temperature_2m_max[index]);
+        const minTemp = Math.round(daily.temperature_2m_min[index]);
 
-        const maxTemp = Math.round(daily.temperature_2m_max[i]);
-        const minTemp = Math.round(daily.temperature_2m_min[i]);
-        const weatherInfo = getWeatherDescription(daily.weather_code[i]);
+        const dateObj = new Date(time);
+        const dayIndex = dateObj.getDay();
+        let dayName = (index === 0) ? "Bugün" : azDays[dayIndex];
+
+        const dailyIconName = getIconFileNameForCode(weatherCode, 1);
+        const iconUrl = `https://cdn.meteocons.com/3.0.0-next.10/svg/fill/${dailyIconName}`;
 
         const card = document.createElement('div');
         card.className = 'forecast-card';
         card.innerHTML = `
             <span class="day">${dayName}</span>
-            <i class="${weatherInfo.icon}"></i>
+            <img src="${iconUrl}" alt="Hava" style="width: 45px; height: 45px;">
             <span class="temps">${maxTemp}° / ${minTemp}°</span>
         `;
         container.appendChild(card);
-    }
+    });
 
-    // --- SÜRÜŞDÜRMƏ MEXANİZMİ (Kartlar yaradıldıqdan sonra işə düşür) ---
+    // --- SÜRÜŞDÜRMƏ MEXANİZMİ ---
     const slider = container;
     let isDown = false;
     let startX;
     let scrollLeft;
 
-    // Köhnə dinləyicilərin təkrar əlavə olunmaması üçün sadə yoxlama
     if (!slider.dataset.listenerAdded) {
         slider.dataset.listenerAdded = "true";
 
@@ -233,6 +309,43 @@ function getWeatherDescription(code) {
         return weatherCodes[code];
     }
     return { text: "Açıq, Günəşli", icon: "fa-solid fa-sun" };
+}
+
+// Kodlara və gecə/gündüzə uyğun fayl adını qaytaran köməkçi funksiya
+function getIconFileNameForCode(code, isDay = 1) {
+    const iconMap = {
+        0: 'clear-day.svg',
+        1: 'mostly-clear-day.svg',
+        2: 'partly-cloudy-night.svg',
+        3: 'cloudy.svg',
+        45: 'mist.svg',
+        48: 'fog.svg',
+        51: 'mostly-clear-day-drizzle.svg',
+        53: 'mostly-clear-day-drizzle.svg',
+        55: 'mostly-clear-day-drizzle.svg',
+        61: 'rain.svg',
+        63: 'rain.svg',
+        65: 'rain.svg',
+        71: 'snow.svg',
+        73: 'snow.svg',
+        75: 'snow.svg',
+        95: 'extreme-thunderstorms-day.svg'
+    };
+
+    let fileName = iconMap[code] || 'cloudy.svg';
+
+    if (code === 0) {
+        fileName = (isDay === 1) ? 'clear-day.svg' : 'clear-night.svg';
+    }
+
+    return fileName;
+}
+
+// Cari hava üçün ikon URL-ni qaytaran əsas funksiya
+function getWeatherIconUrl(weatherCode, isDay = 1) {
+    const baseUrl = "https://cdn.meteocons.com/3.0.0-next.10/svg/fill/";
+    const fileName = getIconFileNameForCode(weatherCode, isDay);
+    return baseUrl + fileName;
 }
 
 function safeSetText(id, text) {
