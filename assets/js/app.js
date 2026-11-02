@@ -257,36 +257,44 @@ function getWeatherDescription(code) {
     return { text: "Açıq, Günəşli", icon: "fa-solid fa-sun" };
 }
 
-// Kodlara və gecə/gündüzə uyğun fayl adını qaytaran köməkçi funksiya
 function getIconFileNameForCode(code, isDay = 1) {
+    // Vaxt təyini (gündüz və ya gecə)
+    const timeSuffix = (isDay === 1 || isDay === true) ? 'day' : 'night';
+
+    // Hər bir WMO kodu üçün 100% işləyən fayl adları
     const iconMap = {
-        0: 'clear-day.svg',
-        1: 'mostly-clear-day.svg',
-        2: 'partly-cloudy-day.svg',
+        0: `clear-${timeSuffix}.svg`,
+        1: `mostly-clear-${timeSuffix}.svg`,
+        2: `partly-cloudy-${timeSuffix}.svg`,
         3: 'cloudy.svg',
         45: 'mist.svg',
         48: 'fog.svg',
-        51: 'mostly-clear-day-drizzle.svg',
-        53: 'mostly-clear-day-drizzle.svg',
-        55: 'mostly-clear-day-drizzle.svg',
+        51: 'drizzle.svg',
+        53: 'drizzle.svg',
+        55: 'drizzle.svg',
+        56: 'drizzle.svg',
+        57: 'drizzle.svg',
         61: 'rain.svg',
         63: 'rain.svg',
         65: 'rain.svg',
+        66: 'rain.svg',
+        67: 'rain.svg',
         71: 'snow.svg',
         73: 'snow.svg',
         75: 'snow.svg',
-        95: 'extreme-thunderstorms-day.svg'
+        77: 'snow.svg',
+        80: 'rain.svg',
+        81: 'rain.svg',
+        82: 'rain.svg',
+        85: 'snow.svg',
+        86: 'snow.svg',
+        95: `extreme-thunderstorms-${timeSuffix}.svg`,
+        96: `extreme-thunderstorms-${timeSuffix}.svg`,
+        99: `extreme-thunderstorms-${timeSuffix}.svg`
     };
 
-    let fileName = iconMap[code] || 'cloudy.svg';
-
-    if (code === 0) {
-        fileName = (isDay === 1) ? 'clear-day.svg' : 'clear-night.svg';
-    } else if (code === 2) {
-        fileName = (isDay === 1) ? 'partly-cloudy-day.svg' : 'partly-cloudy-night.svg';
-    }
-
-    return fileName;
+    // Əgər kod tapılmasa, qırıq şəkil yerinə avtomatik buludlu ikon qaytarır ki, xəta verməsin
+    return iconMap[code] || 'cloudy.svg';
 }
 
 function getWeatherIconUrl(weatherCode, isDay = 1) {
