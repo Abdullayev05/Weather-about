@@ -87,6 +87,12 @@ body {
     display: none !important;
 }
 
+.leaflet-tile-pane img,
+.leaflet-marker-icon {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
 .search-box-container {
     position: absolute;
     top: 24px;
