@@ -373,9 +373,29 @@ function getWeatherTextByCode(code) {
         2: "Az Buludlu",
         3: "Buludlu",
         45: "Dumanlı",
-        61: "Yağışlı",
-        71: "Qarlı",
-        95: "Şimşəkli Yağış"
+        48: "Şaxtalı Duman",
+        51: "Çiskinli Yağış",
+        53: "Mülayim Çiskin",
+        55: "Güclü Çiskin",
+        56: "Donan Çiskin",
+        57: "Güclü Donan Çiskin",
+        61: "Zəif Yağış",
+        63: "Mülayim Yağış",
+        65: "Güclü Yağış",
+        66: "Donan Yağış",
+        67: "Güclü Donan Yağış",
+        71: "Zəif Qar",
+        73: "Mülayim Qar",
+        75: "Güclü Qar",
+        77: "Qar Dənəcikləri",
+        80: "Zəif Leysan",
+        81: "Mülayim Leysan",
+        82: "Şiddətli Leysan",
+        85: "Zəif Qar Leysanı",
+        86: "Güclü Qar Leysanı",
+        95: "Şimşəkli Yağış",
+        96: "Dolu ilə Şimşək",
+        99: "Şiddətli Dolu və Şimşək"
     };
 
     return textMap[code] || "Buludlu";
