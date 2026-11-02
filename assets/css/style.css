@@ -43,6 +43,29 @@ body {
     background: #111;
 }
 
+/* Xəritənin lap aşağısında görünəcək ipucu yazısı */
+.map-hint {
+    position: absolute;
+    bottom: 20px;
+    /* Xəritənin alt kənarından məsafə */
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.85);
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 1000;
+    /* Xəritənin üzərində qalması üçün */
+    pointer-events: none;
+    /* Kliklərin birbaşa xəritəyə keçməsinə mane olmur */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: opacity 0.3s ease;
+}
+
 .search-box-container {
     position: absolute;
     top: 20px;
@@ -123,7 +146,7 @@ body {
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 12px; 
+    gap: 12px;
 }
 
 .header p {
@@ -144,11 +167,14 @@ body {
     position: relative;
     margin-bottom: 16px;
 }
-.weather-details-grid, .details-container {
+
+.weather-details-grid,
+.details-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
 }
+
 .temp-box h1 {
     font-size: 52px;
     font-weight: 600;
@@ -236,10 +262,12 @@ body {
     align-items: center;
     margin-bottom: 4px;
 }
+
 #location-icon {
-    font-size: 22px;   
-    color: #ffffff;    
+    font-size: 22px;
+    color: #ffffff;
 }
+
 .weather-section h3 {
     font-size: 17px;
     font-weight: 500;
@@ -268,8 +296,8 @@ body {
 }
 
 .forecast-card {
-    flex: 0 0 95px;      
-    height: 110px;     
+    flex: 0 0 95px;
+    height: 110px;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
@@ -282,7 +310,7 @@ body {
     box-sizing: border-box;
 }
 
-.forecast-card .day, 
+.forecast-card .day,
 .forecast-card span:first-child {
     font-size: 12px;
     font-weight: 500;
@@ -295,11 +323,11 @@ body {
     margin: 2px 0;
 }
 
-.forecast-card .temp, 
+.forecast-card .temp,
 .forecast-card div:last-child {
     font-size: 13px;
     font-weight: 600;
-    margin-bottom: 2px; 
+    margin-bottom: 2px;
 }
 
 .forecast-card i {
@@ -393,6 +421,21 @@ body {
 @media screen and (max-width: 768px) {
     .map-section {
         height: 320px;
+    }
+
+    .map-wrapper {
+        height: 400px !important;
+        /* Kiçik ekranlarda xəritəyə sabit və yetərli hündürlük veririk */
+        min-height: 350px;
+    }
+
+    /* İpucu yazısının ölçüsünü və yerini mobilə uyğunlaşdırırıq */
+    .map-hint {
+        bottom: 15px;
+        font-size: 11px;
+        padding: 6px 12px;
+        white-space: nowrap;
+        /* Yazının sətirə sığışub qırılmasının qarşısını alır */
     }
 
     .search-box-container {
