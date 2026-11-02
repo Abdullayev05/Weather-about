@@ -325,21 +325,45 @@ function renderWeeklyForecast(daily) {
 }
 
 function getWeatherIconUrl(code, isDay = 1) {
-    const suffix = (isDay === 1 || isDay === true) ? 'day' : 'night';
+    // Gündüz (1 və ya true) və ya gecə (0 və ya false) olmasını yoxlayırıq
+    const timeSuffix = (isDay === 1 || isDay === true) ? 'day' : 'night';
     const baseUrl = "https://cdn.meteocons.com/3.0.0-next.10/svg/fill/";
 
+    // Bütün WMO hava kodlarını əhatə edən tam xəritə (iconMap)
     const iconMap = {
-        0: `clear-${suffix}.svg`,
-        1: `mostly-clear-${suffix}.svg`,
-        2: `partly-cloudy-${suffix}.svg`,
+        0: `clear-${timeSuffix}.svg`,
+        1: `mostly-clear-${timeSuffix}.svg`,
+        2: `partly-cloudy-${timeSuffix}.svg`,
         3: 'cloudy.svg',
-        45: 'fog.svg',
+        45: 'mist.svg',
+        48: 'fog.svg',
+        51: 'drizzle.svg',
+        53: 'drizzle.svg',
+        55: 'drizzle.svg',
+        56: 'drizzle.svg',
+        57: 'drizzle.svg',
         61: 'rain.svg',
+        63: 'rain.svg',
+        65: 'rain.svg',
+        66: 'rain.svg',
+        67: 'rain.svg',
         71: 'snow.svg',
-        95: `thunderstorms-${suffix}.svg`
+        73: 'snow.svg',
+        75: 'snow.svg',
+        77: 'snow.svg',
+        80: 'rain.svg',
+        81: 'rain.svg',
+        82: 'rain.svg',
+        85: 'snow.svg',
+        86: 'snow.svg',
+        95: `extreme-thunderstorms-${timeSuffix}.svg`,
+        96: `extreme-thunderstorms-${timeSuffix}.svg`,
+        99: `extreme-thunderstorms-${timeSuffix}.svg`
     };
 
-    return baseUrl + (iconMap[code] || 'cloudy.svg');
+    // Əgər kod tapılmasa, avtomatik 'cloudy.svg' qaytarır ki, xəta verməsin
+    const fileName = iconMap[code] || 'cloudy.svg';
+    return baseUrl + fileName;
 }
 
 function getWeatherTextByCode(code) {
