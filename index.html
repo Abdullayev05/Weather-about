@@ -6,21 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Professional İnteraktiv Hava Proqnozu</title>
 
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-    <!-- Google Fonts & FontAwesome -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- JSON Faylını əvvəlcədən yükləmək üçün -->
     <link rel="preload" href="./data/weather-codes.json" as="fetch" type="application/json" crossorigin>
 
-    <!-- CSS Faylımız -->
     <link rel="stylesheet" href="./assets/css/style.css">
     <script type="module" src="./assets/js/app.js"></script>
-    <!-- <script type="module" src="./assets/js/api.js"></script> -->
     <script type="module" src="./assets/js/ui.js"></script>
 
 </head>
@@ -29,40 +24,33 @@
     <canvas id="weather-canvas"></canvas>
     <div class="app-container">
 
-        <!-- SOL TƏRƏF: XƏRİTƏ VƏ AXTARIŞ PANELİ -->
         <div class="map-section">
             <div class="search-box-container">
                 <input type="text" id="city-input" placeholder="Məkan adı daxil edin">
                 <button id="search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
             </div>
-
             <div id="map"></div>
-
-            <!-- <div class="map-instruction">
-                <i class="fa-solid fa-hand-pointer"></i> Xəritəyə klikləyin və ya yuxarıdan axtarış edin
-            </div> -->
         </div>
 
-        <!-- SAĞ TƏRƏF: HAVA MƏLUMATLARI -->
         <div class="weather-section">
             <div class="header">
-                <h2 id="location-name"><i class="fa-solid fa-location-dot"></i>Yer seçin</h2>
-                <p id="current-date">--</p>
+                <h2 id="location-header" style="display: none;">
+                    <i id="location-icon" class="fa-solid fa-location-dot"></i>
+                    <span id="location-title"></span>
+                </h2>
+                <p id="location-date-time">--</p>
             </div>
 
-            <!-- Cari Hava Kartı -->
             <div class="current-weather">
-    <div class="temp-box">
-        <h1 id="current-temp">11°C</h1>
-        <p id="weather-desc">Buludlu</p>
-    </div>
-    <div class="weather-icon">
-        <!-- İşarələdiyin yerə düşəcək hərəkətli ikon teqi -->
-        <object id="main-icon" data="" type="image/svg+xml" style="width: 85px; height: 85px;"></object>
-    </div>
-</div>
+                <div class="temp-box">
+                    <h1 id="current-temp">--°C</h1>
+                    <p id="weather-desc">Buludlu</p>
+                </div>
+                <div class="weather-icon">
+                    <img id="main-icon" src="" alt="Hava İkonu" style="width: 75px; height: 75px;">
+                </div>
+            </div>
 
-            <!-- Əlavə Detallar (Külək, Rütubət) -->
             <div class="weather-details">
                 <div class="detail-item">
                     <object id="wind-icon" data="https://cdn.meteocons.com/3.0.0-next.10/svg/fill/wind.svg"
@@ -76,20 +64,16 @@
                 </div>
             </div>
 
-            <!-- 7 Günlük Proqnoz Başlığı -->
             <h3><i class="fa-solid fa-calendar-days"></i> 7 Günlük Proqnoz</h3>
 
-            <!-- 7 Günlük Kartların Konteyneri -->
             <div class="weekly-forecast" id="weekly-container">
                 <p class="placeholder-text">Zəhmət olmasa xəritədən nöqtə seçin və ya axtarış edin.</p>
             </div>
         </div>
     </div>
 
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- Əsas Modul JS Faylımız (Bütün digər js fayllarını özü idarə edəcək) -->
 </body>
 
 </html>
