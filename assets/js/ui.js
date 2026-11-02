@@ -30,5 +30,3 @@
             slider.scrollLeft = scrollLeft - walk;
         });
     }
-
-    
