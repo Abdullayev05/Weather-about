@@ -33,16 +33,29 @@
 
         <!-- SOL BÖLMƏ: XƏRİTƏ VƏ AXTARIŞ PANELİ -->
         <div class="map-section">
-            <div class="search-box-container">
-                <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" id="city-input" data-i18n-placeholder="search-placeholder"
-                    placeholder="Məkan adı daxil edin" autocomplete="off">
-                <button id="search-btn" title="Axtar" data-i18n-title="search-title"><i
-                        class="fa-solid fa-arrow-right"></i></button>
-                <button id="geo-btn" title="Mənim Yerləşməm (GPS)" data-i18n-title="geo-title"><i
-                        class="fa-solid fa-location-crosshairs"></i></button>
-            </div>
+            <!-- Ümumi konteyner -->
+           <div class="search-and-lang-wrapper">
+    <!-- Qara Axtarış Qutusu -->
+    <div class="search-box-container">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" id="city-input" placeholder="Məkan adı daxil edin" autocomplete="off">
+        
+        <button id="search-btn" title="Axtar">
+            <i class="fa-solid fa-arrow-right"></i>
+        </button>
+        
+        <button id="geo-btn" title="Mənim Yerləşməm (GPS)">
+            <i class="fa-solid fa-location-crosshairs"></i>
+        </button>
+    </div>
 
+    <!-- Dil Seçici (Ayrı, qara qutunun sağında) -->
+    <select id="lang-switcher">
+        <option value="az">AZ</option>
+        <option value="en">EN</option>
+        <option value="uk">UA</option>
+    </select>
+</div>
             <!-- Xəritə Konteyneri -->
             <div class="map-wrapper">
                 <div id="map"></div>
@@ -55,14 +68,7 @@
 
         <!-- SAĞ BÖLMƏ: ƏTRAFLI HAVA İNFORMASİYASI -->
         <div class="weather-section" style="position: relative;">
-            <div class="language-selector" style="position: absolute; top: 15px; right: 20px; z-index: 1000;">
-                <select id="lang-switcher"
-                    style="padding: 6px 12px; border-radius: 8px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-weight: 500;">
-                    <option value="az">AZ</option>
-                    <option value="en">EN</option>
-                    <option value="uk">UA</option>
-                </select>
-            </div>
+
             <!-- Başlıq və Məkan İnformasiyası -->
             <div class="header">
                 <div class="header-left">
