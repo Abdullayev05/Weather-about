@@ -1,44 +1,190 @@
 /* ================================================================== */
-/* COMPLETE INTERACTIVE WEATHER APPLICATION SCRIPT                    */
+/* COMPLETE INTERACTIVE WEATHER APPLICATION SCRIPT (WITH i18n & GEO)  */
 /* ================================================================== */
 
 let map = null;
 let marker = null;
 let currentSelectedTimezone = 'Asia/Baku';
 
-const AZ_WEEKDAYS_SHORT = ['Bazar', 'B.ertəsi', 'Ç.axşamı', 'Çərşənbə', 'C.axşamı', 'Cümə', 'Şənbə'];
-const AZ_MONTHS = ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'İyun', 'İyul', 'Avqust', 'Sentyabr', 'Oktyabr', 'Noyabr', 'Dekabr'];
+// Cari seçilmiş koordinatları saxlamaq üçün qlobal dəyişənlər
+let currentLat = null;
+let currentLon = null;
+
+// 1. Tərcümələr və Dil Lüğətləri
+const translations = {
+    az: {
+        "page-title": "Hava Proqnozu",
+        "search-placeholder": "Məkan adı daxil edin",
+        "map-hint-text": "Xəritədən istədiyiniz koordinatı seçin",
+        "loading-text": "Məlumat yüklənir...",
+        "feels-like": "Hiss edilən",
+        "wind-speed-label": "Küləyin Sürəti",
+        "wind-dir-label": "Küləyin İstiqaməti",
+        "humidity-label": "Rütubət dərəcəsi",
+        "pressure-label": "Atmosfer Təzyiqi",
+        "visibility-label": "Görünürlük",
+        "uv-label": "Maksimum UV",
+        "sunrise-label": "Günəşin Doğuşu",
+        "sunset-label": "Günəşin Batışı",
+        "hourly-title": "24 Saatlıq Proqnoz",
+        "weekly-title": "7 Günlük Hava Proqnozu",
+        "select-point-text": "Zəhmət olmasa xəritədən nöqtə seçin.",
+        "my-location": "Mənim Yerləşməm",
+        "selected-location": "Seçilmiş Məkan",
+        "today": "Bugün",
+        "search-not-found": "Axtardığınız məkan tapılmadı."
+    },
+    en: {
+        "page-title": "Weather Forecast",
+        "search-placeholder": "Enter location name",
+        "map-hint-text": "Select desired coordinates from the map",
+        "loading-text": "Loading data...",
+        "feels-like": "Feels like",
+        "wind-speed-label": "Wind Speed",
+        "wind-dir-label": "Wind Direction",
+        "humidity-label": "Humidity",
+        "pressure-label": "Pressure",
+        "visibility-label": "Visibility",
+        "uv-label": "Max UV Index",
+        "sunrise-label": "Sunrise",
+        "sunset-label": "Sunset",
+        "hourly-title": "24-Hour Forecast",
+        "weekly-title": "7-Day Forecast",
+        "select-point-text": "Please select a point on the map.",
+        "my-location": "My Location",
+        "selected-location": "Selected Location",
+        "today": "Today",
+        "search-not-found": "Location not found."
+    },
+    uk: {
+        "page-title": "Прогноз погоди",
+        "search-placeholder": "Введіть назву місця",
+        "map-hint-text": "Виберіть потрібні координати на карті",
+        "loading-text": "Завантаження даних...",
+        "feels-like": "Відчувається як",
+        "wind-speed-label": "Швидкість вітру",
+        "wind-dir-label": "Напрямок вітру",
+        "humidity-label": "Вологість",
+        "pressure-label": "Тиск",
+        "visibility-label": "Видимість",
+        "uv-label": "Макс. УФ-індекс",
+        "sunrise-label": "Схід сонця",
+        "sunset-label": "Захід сонця",
+        "hourly-title": "Прогноз на 24 години",
+        "weekly-title": "Прогноз на 7 днів",
+        "select-point-text": "Будь ласка, виберіть точку на карті.",
+        "my-location": "Моє місцезнаходження",
+        "selected-location": "Вибране місце",
+        "today": "Сьогодні",
+        "search-not-found": "Місце не знайдено."
+    }
+};
+
+// 2. Hava Kodu Tərcümələri (WMO Weather Codes)
+const weatherTranslations = {
+    az: {
+        0: "Açıq, Günəşli", 1: "Əsasən Açıq", 2: "Az Buludlu", 3: "Buludlu",
+        45: "Dumanlı", 48: "Şaxtalı Duman", 51: "Çiskinli Yağış", 53: "Mülayim Çiskin",
+        55: "Güclü Çiskin", 56: "Donan Çiskin", 57: "Güclü Donan Çiskin", 61: "Zəif Yağış",
+        63: "Mülayim Yağış", 65: "Güclü Yağış", 66: "Donan Yağış", 67: "Güclü Donan Yağış",
+        71: "Zəif Qar", 73: "Mülayim Qar", 75: "Güclü Qar", 77: "Qar Dənəcikləri",
+        80: "Zəif Leysan", 81: "Mülayim Leysan", 82: "Şiddətli Leysan", 85: "Zəif Qar Leysanı",
+        86: "Güclü Qar Leysanı", 95: "Şimşəkli Yağış", 96: "Dolu ilə Şimşək", 99: "Şiddətli Dolu və Şimşək"
+    },
+    en: {
+        0: "Clear, Sunny", 1: "Mainly Clear", 2: "Partly Cloudy", 3: "Overcast",
+        45: "Foggy", 48: "Depositing Rime Fog", 51: "Light Drizzle", 53: "Moderate Drizzle",
+        55: "Dense Drizzle", 56: "Freezing Drizzle", 57: "Dense Freezing Drizzle", 61: "Slight Rain",
+        63: "Moderate Rain", 65: "Heavy Rain", 66: "Freezing Rain", 67: "Heavy Freezing Rain",
+        71: "Slight Snow", 73: "Moderate Snow", 75: "Heavy Snow", 77: "Snow Grains",
+        80: "Slight Rain Showers", 81: "Moderate Rain Showers", 82: "Violent Rain Showers", 85: "Slight Snow Showers",
+        86: "Heavy Snow Showers", 95: "Thunderstorm", 96: "Thunderstorm with Hail", 99: "Heavy Thunderstorm with Hail"
+    },
+    uk: {
+        0: "Ясно, Сонячно", 1: "Переважно ясно", 2: "Мінлива хмарність", 3: "Хмарно",
+        45: "Туман", 48: "Паморозь", 51: "Легка мряка", 53: "Помірна мряка",
+        55: "Густа мряка", 56: "Замерзаюча мряка", 57: "Густа замерзаюча мряка", 61: "Невеликий дощ",
+        63: "Помірний дощ", 65: "Сильний дощ", 66: "Замерзаючий дощ", 67: "Сильний замерзаючий дощ",
+        71: "Невеликий сніг", 73: "Помірний сніг", 75: "Сильний сніг", 77: "Снігові зерна",
+        80: "Невеликий злива", 81: "Помірний злива", 82: "Сильний злива", 85: "Невеликий снігопад",
+        86: "Сильний снігопад", 95: "Гроза", 96: "Гроза з градом", 99: "Сильна гроза з градом"
+    }
+};
+
+// 3. Həftə və Ay siyahıları
+const WEEKDAYS_SHORT = {
+    az: ['Bazar', 'B.ertəsi', 'Ç.axşamı', 'Çərşənbə', 'C.axşamı', 'Cümə', 'Şənbə'],
+    en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    uk: ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+};
+
+const MONTHS = {
+    az: ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'İyun', 'İyul', 'Avqust', 'Sentyabr', 'Oktyabr', 'Noyabr', 'Dekabr'],
+    en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+    uk: ['Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень', 'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень']
+};
+
+// 4. Dil Dəyişdirmə Funksiyası
+function changeLanguage(lang) {
+    if (!translations[lang]) lang = 'az';
+
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (translations[lang][key]) {
+            el.innerText = translations[lang][key];
+        }
+    });
+
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+        const key = el.getAttribute("data-i18n-placeholder");
+        if (translations[lang][key]) {
+            el.setAttribute("placeholder", translations[lang][key]);
+        }
+    });
+
+    localStorage.setItem("selectedLang", lang);
+
+    const langSwitcher = document.getElementById("lang-switcher");
+    if (langSwitcher && langSwitcher.value !== lang) {
+        langSwitcher.value = lang;
+    }
+
+    // Əgər koordinat mövcuddursa, dili dəyişəndə "Hiss edilən" yazısını və məkan adını yeniləyirik
+    if (typeof currentLat !== 'undefined' && typeof currentLon !== 'undefined' && currentLat !== null && currentLon !== null) {
+        getLocationName(currentLat, currentLon);
+        // Cari havanı yenidən çəkmək üçün (hiss edilən yazısının dili dəyişməsi üçün)
+        executeWeatherDataAndLocation(currentLat, currentLon, document.getElementById('location-title').innerText);
+    }
+}
+
+// 5. Hava Koduna Görə Mətnin Alınması
+function getWeatherTextByCode(code, lang = null) {
+    const currentLang = lang || localStorage.getItem("selectedLang") || "az";
+    const currentMap = weatherTranslations[currentLang] || weatherTranslations['az'];
+    return currentMap[code] || (currentLang === 'en' ? "Cloudy" : currentLang === 'uk' ? "Хмарно" : "Buludlu");
+}
 
 /**
- * Xəritənin OpenStreetMap (Pulsuz API Key-siz) təbəqəsi ilə yaradılması
+ * Xəritənin OpenStreetMap ilə yaradılması
  */
 function initMap() {
     const mapElement = document.getElementById('map');
     if (!mapElement) return;
 
-    // Xəritə obyekti
     map = L.map('map', { 
         zoomControl: false,
         attributionControl: true
     }).setView([40.4093, 49.8671], 7);
 
-    // 100% Pulsuz və API açarı tələb etməyən standart OpenStreetMap qatı
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // Xəritəyə klik hadisəsi
     map.on('click', onMapClick);
 
-    // Ölçü hesablama xətalarının qarşısını alan taymerlər
-    setTimeout(() => {
-        if (map) map.invalidateSize();
-    }, 200);
-
-    setTimeout(() => {
-        if (map) map.invalidateSize();
-    }, 800);
+    setTimeout(() => { if (map) map.invalidateSize(); }, 200);
+    setTimeout(() => { if (map) map.invalidateSize(); }, 800);
 }
 
 /**
@@ -47,7 +193,6 @@ function initMap() {
 function onMapClick(e) {
     const lat = e.latlng.lat;
     const lon = e.latlng.lng;
-
     executeWeatherDataAndLocation(lat, lon);
 }
 
@@ -77,15 +222,16 @@ async function performSearch() {
     const query = cityInput.value.trim();
     if (!query) return;
 
+    const currentLang = localStorage.getItem("selectedLang") || "az";
     const normalizedQuery = normalizeAzText(query);
-    let searchUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&accept-language=az`;
+    let searchUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&accept-language=${currentLang}`;
 
     try {
         let response = await fetch(searchUrl);
         let data = await response.json();
 
         if (!data || data.length === 0) {
-            searchUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(normalizedQuery)}&accept-language=az`;
+            searchUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(normalizedQuery)}&accept-language=${currentLang}`;
             response = await fetch(searchUrl);
             data = await response.json();
         }
@@ -103,7 +249,7 @@ async function performSearch() {
             saveToQuickLocations(displayName, lat, lon);
             await executeWeatherDataAndLocation(lat, lon, displayName);
         } else {
-            alert("Axtardığınız məkan tapılmadı.");
+            alert(translations[currentLang]["search-not-found"]);
         }
     } catch (error) {
         console.error("Axtarış xətası:", error);
@@ -119,6 +265,9 @@ function getUserGPSLocation() {
         return;
     }
 
+    const currentLang = localStorage.getItem("selectedLang") || "az";
+    const myLocationText = translations[currentLang]["my-location"];
+
     navigator.geolocation.getCurrentPosition(
         async (position) => {
             const lat = position.coords.latitude;
@@ -129,7 +278,7 @@ function getUserGPSLocation() {
                 setTimeout(() => map.invalidateSize(), 150);
             }
 
-            await executeWeatherDataAndLocation(lat, lon, "Mənim Yerləşməm");
+            await executeWeatherDataAndLocation(lat, lon, myLocationText);
         },
         (error) => {
             alert("GPS vasitəsilə məkan təyin oluna bilmədi.");
@@ -142,6 +291,9 @@ function getUserGPSLocation() {
  * Hava məlumatının gətirilməsi
  */
 async function executeWeatherDataAndLocation(lat, lon, customName = null) {
+    currentLat = lat;
+    currentLon = lon;
+
     updateMarker(lat, lon);
 
     try {
@@ -175,16 +327,18 @@ async function executeWeatherDataAndLocation(lat, lon, customName = null) {
     if (customName) {
         updateLocationTitle(customName);
     } else {
-        await fetchPlaceNameFromCoordinates(lat, lon);
+        await getLocationName(lat, lon);
     }
 }
 
 /**
- * Koordinat adının çəkilməsi
+ * Koordinat adının (Reverse Geocoding) cari dildə çəkilməsi
  */
-async function fetchPlaceNameFromCoordinates(lat, lon) {
+async function getLocationName(lat, lon) {
+    const currentLang = localStorage.getItem("selectedLang") || "az";
+
     try {
-        const reverseGeocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=az`;
+        const reverseGeocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=${currentLang}`;
         const res = await fetch(reverseGeocodeUrl, {
             headers: { 'User-Agent': 'WeatherAppPro/2.0' }
         });
@@ -192,7 +346,7 @@ async function fetchPlaceNameFromCoordinates(lat, lon) {
         if (!res.ok) throw new Error("Limit");
 
         const data = await res.json();
-        let name = "Seçilmiş Məkan";
+        let name = translations[currentLang]["selected-location"];
 
         if (data && data.address) {
             name = data.address.city || 
@@ -230,6 +384,7 @@ function updateLocationTitle(name) {
 }
 
 function renderCurrentWeather(current, daily) {
+    const currentLang = localStorage.getItem("selectedLang") || "az";
     const temp = Math.round(current.temperature_2m);
     const humidity = current.relative_humidity_2m;
     const apparent = Math.round(current.apparent_temperature);
@@ -242,7 +397,10 @@ function renderCurrentWeather(current, daily) {
     setDOMText('current-temp', `${temp}°C`);
     setDOMText('humidity', `${humidity}%`);
     setDOMText('apparent-temp', `${apparent}°C`);
-    setDOMText('feels-like-text', `Hiss edilən: ${apparent}°C`);
+    
+    // BURASI DÜZƏLDİLDİ: Artıq "Hiss edilən" sözü seçilmiş dilə uyğun dəyişir
+    setDOMText('feels-like-text', `${translations[currentLang]["feels-like"]}: ${apparent}°C`);
+    
     setDOMText('pressure', `${pressure} hPa`);
     setDOMText('wind-speed', `${windSpeed} km/s`);
     setDOMText('wind-direction', `${windDir}°`);
@@ -260,7 +418,7 @@ function renderCurrentWeather(current, daily) {
         setDOMText('sunset-time', daily.sunset[0].split('T')[1]);
     }
 
-    const weatherText = getWeatherTextByCode(code);
+    const weatherText = getWeatherTextByCode(code, currentLang);
     setDOMText('weather-desc', weatherText);
 
     const badgeElem = document.getElementById('weather-condition-badge');
@@ -305,12 +463,15 @@ function renderWeeklyForecast(daily) {
     if (!container) return;
     container.innerHTML = '';
 
+    const currentLang = localStorage.getItem("selectedLang") || "az";
+
     daily.time.forEach((timeStr, index) => {
         const maxTemp = Math.round(daily.temperature_2m_max[index]);
         const minTemp = Math.round(daily.temperature_2m_min[index]);
         const code = daily.weather_code[index];
         const dateObj = new Date(timeStr);
-        const dayName = (index === 0) ? "Bugün" : AZ_WEEKDAYS_SHORT[dateObj.getDay()];
+        
+        const dayName = (index === 0) ? translations[currentLang]["today"] : WEEKDAYS_SHORT[currentLang][dateObj.getDay()];
         const iconUrl = getWeatherIconUrl(code, 1);
 
         const card = document.createElement('div');
@@ -325,11 +486,9 @@ function renderWeeklyForecast(daily) {
 }
 
 function getWeatherIconUrl(code, isDay = 1) {
-    // Gündüz (1 və ya true) və ya gecə (0 və ya false) olmasını yoxlayırıq
     const timeSuffix = (isDay === 1 || isDay === true) ? 'day' : 'night';
     const baseUrl = "https://cdn.meteocons.com/3.0.0-next.10/svg/fill/";
 
-    // Bütün WMO hava kodlarını əhatə edən tam xəritə (iconMap)
     const iconMap = {
         0: `clear-${timeSuffix}.svg`,
         1: `mostly-clear-${timeSuffix}.svg`,
@@ -361,44 +520,8 @@ function getWeatherIconUrl(code, isDay = 1) {
         99: `extreme-thunderstorms-${timeSuffix}.svg`
     };
 
-    // Əgər kod tapılmasa, avtomatik 'cloudy.svg' qaytarır ki, xəta verməsin
     const fileName = iconMap[code] || 'cloudy.svg';
     return baseUrl + fileName;
-}
-
-function getWeatherTextByCode(code) {
-    const textMap = {
-        0: "Açıq, Günəşli",
-        1: "Əsasən Açıq",
-        2: "Az Buludlu",
-        3: "Buludlu",
-        45: "Dumanlı",
-        48: "Şaxtalı Duman",
-        51: "Çiskinli Yağış",
-        53: "Mülayim Çiskin",
-        55: "Güclü Çiskin",
-        56: "Donan Çiskin",
-        57: "Güclü Donan Çiskin",
-        61: "Zəif Yağış",
-        63: "Mülayim Yağış",
-        65: "Güclü Yağış",
-        66: "Donan Yağış",
-        67: "Güclü Donan Yağış",
-        71: "Zəif Qar",
-        73: "Mülayim Qar",
-        75: "Güclü Qar",
-        77: "Qar Dənəcikləri",
-        80: "Zəif Leysan",
-        81: "Mülayim Leysan",
-        82: "Şiddətli Leysan",
-        85: "Zəif Qar Leysanı",
-        86: "Güclü Qar Leysanı",
-        95: "Şimşəkli Yağış",
-        96: "Dolu ilə Şimşək",
-        99: "Şiddətli Dolu və Şimşək"
-    };
-
-    return textMap[code] || "Buludlu";
 }
 
 function saveToQuickLocations(name, lat, lon) {
@@ -444,10 +567,12 @@ function renderQuickLocations() {
 function startLiveClock() {
     function updateClock() {
         const now = new Date();
+        const currentLang = localStorage.getItem("selectedLang") || "az";
+        
         const day = now.getDate();
-        const month = AZ_MONTHS[now.getMonth()];
+        const month = MONTHS[currentLang][now.getMonth()];
         const year = now.getFullYear();
-        const weekday = AZ_WEEKDAYS_SHORT[now.getDay()];
+        const weekday = WEEKDAYS_SHORT[currentLang][now.getDay()];
 
         const dateStr = `${day} ${month} ${year}, ${weekday}`;
         const dateElem = document.getElementById('location-date-time');
@@ -482,6 +607,7 @@ function bindEvents() {
     const searchBtn = document.getElementById('search-btn');
     const cityInput = document.getElementById('city-input');
     const geoBtn = document.getElementById('geo-btn');
+    const langSwitcher = document.getElementById('lang-switcher');
 
     if (searchBtn) searchBtn.addEventListener('click', performSearch);
     if (cityInput) {
@@ -491,12 +617,22 @@ function bindEvents() {
     }
     if (geoBtn) geoBtn.addEventListener('click', getUserGPSLocation);
 
+    if (langSwitcher) {
+        langSwitcher.addEventListener('change', (e) => {
+            changeLanguage(e.target.value);
+        });
+    }
+
     window.addEventListener('resize', () => {
         if (map) map.invalidateSize();
     });
 }
 
+// 6. Səhifə Yüklənən Kimi İşə Düşən Əsas Hissə
 document.addEventListener('DOMContentLoaded', () => {
+    const savedLang = localStorage.getItem("selectedLang") || "az";
+    changeLanguage(savedLang);
+
     initMap();
     bindEvents();
     renderQuickLocations();

@@ -2,25 +2,24 @@
 <html lang="az">
 
 <head>
-   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hava Proqnozu</title>
+    <title data-i18n="page-title">Hava Proqnozu</title>
 
     <!-- 1. Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
+
     <!-- 2. Leaflet JS (Mütləq app.js-dən ƏVVƏL yüklənməlidir!) -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="./assets/css/style.css">
 
     <!-- 3. Sənin JS faylın -->
     <script type="module" src="./assets/js/app.js"></script>
     <script type="module" src="./assets/js/ui.js"></script>
-</head>
 </head>
 
 <body>
@@ -29,34 +28,41 @@
 
     <div class="app-container">
 
+        <!-- DİL SEÇİM PANELİ (Əlavə olundu) -->
+
+
         <!-- SOL BÖLMƏ: XƏRİTƏ VƏ AXTARIŞ PANELİ -->
         <div class="map-section">
             <div class="search-box-container">
                 <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" id="city-input" placeholder="Məkan adı daxil edin" autocomplete="off">
-                <button id="search-btn" title="Axtar"><i class="fa-solid fa-arrow-right"></i></button>
-                <button id="geo-btn" title="Mənim Yerləşməm (GPS)"><i class="fa-solid fa-location-crosshairs"></i></button>
+                <input type="text" id="city-input" data-i18n-placeholder="search-placeholder"
+                    placeholder="Məkan adı daxil edin" autocomplete="off">
+                <button id="search-btn" title="Axtar" data-i18n-title="search-title"><i
+                        class="fa-solid fa-arrow-right"></i></button>
+                <button id="geo-btn" title="Mənim Yerləşməm (GPS)" data-i18n-title="geo-title"><i
+                        class="fa-solid fa-location-crosshairs"></i></button>
             </div>
-
-            <!-- Son Axtarılan Şəhərlər / Sevimlilər Paneli -->
-            <!-- <div class="quick-locations-container" id="quick-locations">
-                <span class="quick-title"><i class="fa-solid fa-star"></i> Tez-tez Baxılanlar:</span>
-                <div class="quick-tags" id="quick-tags-wrapper">
-                </div>
-            </div> -->
 
             <!-- Xəritə Konteyneri -->
             <div class="map-wrapper">
                 <div id="map"></div>
                 <div id="map-hint" class="map-hint">
-                    <i class="fa-solid fa-hand-pointer"></i> Xəritədən istədiyiniz koordinatı seçin
+                    <i class="fa-solid fa-hand-pointer"></i> <span data-i18n="map-hint-text">Xəritədən istədiyiniz
+                        koordinatı seçin</span>
                 </div>
             </div>
         </div>
 
         <!-- SAĞ BÖLMƏ: ƏTRAFLI HAVA İNFORMASİYASI -->
-        <div class="weather-section">
-            
+        <div class="weather-section" style="position: relative;">
+            <div class="language-selector" style="position: absolute; top: 15px; right: 20px; z-index: 1000;">
+                <select id="lang-switcher"
+                    style="padding: 6px 12px; border-radius: 8px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-weight: 500;">
+                    <option value="az">AZ</option>
+                    <option value="en">EN</option>
+                    <option value="uk">UA</option>
+                </select>
+            </div>
             <!-- Başlıq və Məkan İnformasiyası -->
             <div class="header">
                 <div class="header-left">
@@ -66,20 +72,17 @@
                     </h2>
                     <p id="location-date-time">--</p>
                 </div>
-                <!-- <div class="header-right">
-                    <span id="weather-condition-badge" class="badge">Açıq</span>
-                </div> -->
             </div>
 
             <!-- Cari Hava Göstəricisi Card -->
             <div class="current-weather">
                 <div class="temp-box">
                     <h1 id="current-temp">--°C</h1>
-                    <p id="weather-desc">Məlumat yüklənir...</p>
-                    <span id="feels-like-text">Hiss edilən: --°C</span>
+                    <p id="weather-desc" data-i18n="loading-text">Məlumat yüklənir...</p>
+                    <div data-i18n="feels-like" id="feels-like-text">Hiss edilən: --°C</div>
                 </div>
                 <div class="weather-icon">
-                    <img id="main-icon" src="" alt="Hava İkonu">
+                    <img id="main-icon" src="" alt="Hava İkonu" data-i18n-alt="weather-icon-alt">
                 </div>
             </div>
 
@@ -88,7 +91,7 @@
                 <div class="detail-item">
                     <div class="detail-icon-box"><i class="fa-solid fa-wind"></i></div>
                     <div class="detail-info">
-                        <span>Küləyin Sürəti</span>
+                        <span data-i18n="wind-speed-label">Küləyin Sürəti</span>
                         <strong id="wind-speed">-- km/s</strong>
                     </div>
                 </div>
@@ -96,7 +99,7 @@
                 <div class="detail-item">
                     <div class="detail-icon-box"><i class="fa-solid fa-compass"></i></div>
                     <div class="detail-info">
-                        <span>Küləyin İstiqaməti</span>
+                        <span data-i18n="wind-dir-label">Küləyin İstiqaməti</span>
                         <strong id="wind-direction">--°</strong>
                     </div>
                 </div>
@@ -104,7 +107,7 @@
                 <div class="detail-item">
                     <div class="detail-icon-box"><i class="fa-solid fa-droplet"></i></div>
                     <div class="detail-info">
-                        <span>Rütubət dərəcəsi</span>
+                        <span data-i18n="humidity-label">Rütubət dərəcəsi</span>
                         <strong id="humidity">--%</strong>
                     </div>
                 </div>
@@ -112,7 +115,7 @@
                 <div class="detail-item">
                     <div class="detail-icon-box"><i class="fa-solid fa-gauge-high"></i></div>
                     <div class="detail-info">
-                        <span>Atmosfer Təzyiqi</span>
+                        <span data-i18n="pressure-label">Atmosfer Təzyiqi</span>
                         <strong id="pressure">-- hPa</strong>
                     </div>
                 </div>
@@ -120,7 +123,7 @@
                 <div class="detail-item">
                     <div class="detail-icon-box"><i class="fa-solid fa-eye"></i></div>
                     <div class="detail-info">
-                        <span>Görünürlük</span>
+                        <span data-i18n="visibility-label">Görünürlük</span>
                         <strong id="visibility">-- km</strong>
                     </div>
                 </div>
@@ -128,7 +131,7 @@
                 <div class="detail-item">
                     <div class="detail-icon-box"><i class="fa-solid fa-sun"></i></div>
                     <div class="detail-info">
-                        <span>Maksimum UV</span>
+                        <span data-i18n="uv-label">Maksimum UV</span>
                         <strong id="uv-index">--</strong>
                     </div>
                 </div>
@@ -139,14 +142,14 @@
                 <div class="sun-item">
                     <i class="fa-solid fa-sun-plant-wilt"></i>
                     <div>
-                        <span>Günəşin Doğuşu</span>
+                        <span data-i18n="sunrise-label">Günəşin Doğuşu</span>
                         <strong id="sunrise-time">--:--</strong>
                     </div>
                 </div>
                 <div class="sun-item">
                     <i class="fa-solid fa-moon"></i>
                     <div>
-                        <span>Günəşin Batışı</span>
+                        <span data-i18n="sunset-label">Günəşin Batışı</span>
                         <strong id="sunset-time">--:--</strong>
                     </div>
                 </div>
@@ -155,20 +158,21 @@
             <!-- SAATLIQ PROQNOZ MODULU (24 Saat) -->
             <div class="forecast-section">
                 <div class="section-title">
-                    <h3><i class="fa-solid fa-clock"></i> 24 Saatlıq Proqnoz</h3>
+                    <h3><i class="fa-solid fa-clock"></i> <span data-i18n="hourly-title">24 Saatlıq Proqnoz</span></h3>
                 </div>
                 <div class="hourly-forecast" id="hourly-container">
-                    <p class="placeholder-text">Zəhmət olmasa xəritədən nöqtə seçin.</p>
+                    <p class="placeholder-text" data-i18n="select-point-text">Zəhmət olmasa xəritədən nöqtə seçin.</p>
                 </div>
             </div>
 
             <!-- 7 GÜNLÜK PROQNOZ MODULU -->
             <div class="forecast-section">
                 <div class="section-title">
-                    <h3><i class="fa-solid fa-calendar-days"></i> 7 Günlük Hava Proqnozu</h3>
+                    <h3><i class="fa-solid fa-calendar-days"></i> <span data-i18n="weekly-title">7 Günlük Hava
+                            Proqnozu</span></h3>
                 </div>
                 <div class="weekly-forecast" id="weekly-container">
-                    <p class="placeholder-text">Zəhmət olmasa xəritədən nöqtə seçin.</p>
+                    <p class="placeholder-text" data-i18n="select-point-text">Zəhmət olmasa xəritədən nöqtə seçin.</p>
                 </div>
             </div>
 
