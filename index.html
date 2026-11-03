@@ -34,28 +34,28 @@
         <!-- SOL BÖLMƏ: XƏRİTƏ VƏ AXTARIŞ PANELİ -->
         <div class="map-section">
             <!-- Ümumi konteyner -->
-           <div class="search-and-lang-wrapper">
-    <!-- Qara Axtarış Qutusu -->
-    <div class="search-box-container">
-        <i class="fa-solid fa-magnifying-glass search-icon"></i>
-        <input type="text" id="city-input" placeholder="Məkan adı daxil edin" autocomplete="off">
-        
-        <button id="search-btn" title="Axtar">
-            <i class="fa-solid fa-arrow-right"></i>
-        </button>
-        
-        <button id="geo-btn" title="Mənim Yerləşməm (GPS)">
-            <i class="fa-solid fa-location-crosshairs"></i>
-        </button>
-    </div>
+            <div class="search-and-lang-wrapper">
+                <!-- Qara Axtarış Qutusu -->
+                <div class="search-box-container">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="city-input" placeholder="Məkan adı daxil edin"
+                        data-i18n-placeholder="search-placeholder" autocomplete="off">
+                    <button id="search-btn" title="Axtar">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
 
-    <!-- Dil Seçici (Ayrı, qara qutunun sağında) -->
-    <select id="lang-switcher">
-        <option value="az">AZ</option>
-        <option value="en">EN</option>
-        <option value="uk">UA</option>
-    </select>
-</div>
+                    <button id="geo-btn" title="Mənim Yerləşməm (GPS)">
+                        <i class="fa-solid fa-location-crosshairs"></i>
+                    </button>
+                </div>
+
+                <!-- Dil Seçici (Ayrı, qara qutunun sağında) -->
+                <select id="lang-switcher">
+                    <option value="az">AZ</option>
+                    <option value="en">EN</option>
+                    <option value="uk">UA</option>
+                </select>
+            </div>
             <!-- Xəritə Konteyneri -->
             <div class="map-wrapper">
                 <div id="map"></div>
