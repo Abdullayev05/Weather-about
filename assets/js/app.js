@@ -6,9 +6,10 @@ let map = null;
 let marker = null;
 let currentSelectedTimezone = 'Asia/Baku';
 
-// Cari seçilmiş koordinatları saxlamaq üçün qlobal dəyişənlər
+// Cari seçilmiş koordinatları və son hava məlumatını saxlamaq üçün qlobal dəyişənlər
 let currentLat = null;
 let currentLon = null;
+let lastWeatherData = null;
 
 // 1. Tərcümələr və Dil Lüğətləri
 const translations = {
@@ -111,6 +112,22 @@ const weatherTranslations = {
     }
 };
 
+// 2.1 Külək İstiqamətləri Lüğəti və Çevirmə Funksiyası
+const windDirections = {
+    az: ["Şimal", "Şimal-Şərq", "Şərq", "Cənub-Şərq", "Cənub", "Cənub-Qərb", "Qərb", "Şimal-Qərb"],
+    en: ["North", "Northeast", "East", "Southeast", "South", "Southwest", "West", "Northwest"],
+    uk: ["Північ", "Північний схід", "Схід", "Південний схід", "Південь", "Південний захід", "Захід", "Північний захід"]
+};
+
+function getWindDirectionText(deg, lang = null) {
+    if (deg === null || deg === undefined || isNaN(deg)) return "--";
+    const currentLang = lang || localStorage.getItem("selectedLang") || "az";
+    const dirs = windDirections[currentLang] || windDirections.az;
+    const normalizedDeg = ((deg % 360) + 360) % 360;
+    const index = Math.round(normalizedDeg / 45) % 8;
+    return dirs[index];
+}
+
 // 3. Həftə və Ay siyahıları
 const WEEKDAYS_SHORT = {
     az: ['Bazar', 'B.ertəsi', 'Ç.axşamı', 'Çərşənbə', 'C.axşamı', 'Cümə', 'Şənbə'],
@@ -149,11 +166,22 @@ function changeLanguage(lang) {
         langSwitcher.value = lang;
     }
 
-    // Əgər koordinat mövcuddursa, dili dəyişəndə "Hiss edilən" yazısını və məkan adını yeniləyirik
+    // Saxlanmış hava məlumatını dərhal seçilmiş dildə yenidən render edirik
+    if (lastWeatherData) {
+        if (lastWeatherData.current) {
+            renderCurrentWeather(lastWeatherData.current, lastWeatherData.daily);
+        }
+        if (lastWeatherData.hourly) {
+            renderHourlyForecast(lastWeatherData.hourly);
+        }
+        if (lastWeatherData.daily) {
+            renderWeeklyForecast(lastWeatherData.daily);
+        }
+    }
+
+    // Koordinat varsa, məkan adını da seçilmiş dilə uyğun yeniləyirik
     if (typeof currentLat !== 'undefined' && typeof currentLon !== 'undefined' && currentLat !== null && currentLon !== null) {
         getLocationName(currentLat, currentLon);
-        // Cari havanı yenidən çəkmək üçün (hiss edilən yazısının dili dəyişməsi üçün)
-        executeWeatherDataAndLocation(currentLat, currentLon, document.getElementById('location-title').innerText);
     }
 }
 
@@ -165,7 +193,7 @@ function getWeatherTextByCode(code, lang = null) {
 }
 
 /**
- * Xəritənin OpenStreetMap ilə yaradılması
+- Xəritənin OpenStreetMap ilə yaradılması
  */
 function initMap() {
     const mapElement = document.getElementById('map');
@@ -188,7 +216,7 @@ function initMap() {
 }
 
 /**
- * Xəritəyə klik edildikdə koordinatların çəkilməsi
+- Xəritəyə klik edildikdə koordinatların çəkilməsi
  */
 function onMapClick(e) {
     const lat = e.latlng.lat;
@@ -197,7 +225,7 @@ function onMapClick(e) {
 }
 
 /**
- * Mətnin normalizasiyası
+- Mətnin normalizasiyası
  */
 function normalizeAzText(text) {
     if (!text) return '';
@@ -213,7 +241,7 @@ function normalizeAzText(text) {
 }
 
 /**
- * Məkan axtarışı (Nominatim API)
+- Məkan axtarışı (Nominatim API)
  */
 async function performSearch() {
     const cityInput = document.getElementById('city-input');
@@ -257,7 +285,7 @@ async function performSearch() {
 }
 
 /**
- * GPS ilə məkan təyini
+- GPS ilə məkan təyini
  */
 function getUserGPSLocation() {
     if (!navigator.geolocation) {
@@ -288,7 +316,7 @@ function getUserGPSLocation() {
 }
 
 /**
- * Hava məlumatının gətirilməsi
+- Hava məlumatının gətirilməsi
  */
 async function executeWeatherDataAndLocation(lat, lon, customName = null) {
     currentLat = lat;
@@ -303,6 +331,7 @@ async function executeWeatherDataAndLocation(lat, lon, customName = null) {
         if (!response.ok) throw new Error("API error");
 
         const data = await response.json();
+        lastWeatherData = data;
 
         if (data.timezone) {
             currentSelectedTimezone = data.timezone;
@@ -332,7 +361,7 @@ async function executeWeatherDataAndLocation(lat, lon, customName = null) {
 }
 
 /**
- * Koordinat adının (Reverse Geocoding) cari dildə çəkilməsi
+- Koordinat adının (Reverse Geocoding) cari dildə çəkilməsi
  */
 async function getLocationName(lat, lon) {
     const currentLang = localStorage.getItem("selectedLang") || "az";
@@ -391,19 +420,17 @@ function renderCurrentWeather(current, daily) {
     const pressure = current.surface_pressure ? Math.round(current.surface_pressure) : '--';
     const windSpeed = current.wind_speed_10m;
     const windDir = current.wind_direction_10m ?? 0;
+    const windDirText = getWindDirectionText(windDir, currentLang);
     const code = current.weather_code ?? 0;
     const isDay = current.is_day ?? 1;
 
     setDOMText('current-temp', `${temp}°C`);
     setDOMText('humidity', `${humidity}%`);
     setDOMText('apparent-temp', `${apparent}°C`);
-    
-    // BURASI DÜZƏLDİLDİ: Artıq "Hiss edilən" sözü seçilmiş dilə uyğun dəyişir
     setDOMText('feels-like-text', `${translations[currentLang]["feels-like"]}: ${apparent}°C`);
-    
     setDOMText('pressure', `${pressure} hPa`);
     setDOMText('wind-speed', `${windSpeed} km/s`);
-    setDOMText('wind-direction', `${windDir}°`);
+    setDOMText('wind-direction', `${windDirText} (${windDir}°)`);
     setDOMText('visibility', `10 km`);
 
     if (daily && daily.uv_index_max && daily.uv_index_max[0]) {
